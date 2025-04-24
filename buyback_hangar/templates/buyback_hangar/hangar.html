@@ -1,0 +1,32 @@
+{% extends "structure.html" %}
+{% load static %}
+
+{% block page_title %}Corp Hangar Viewer{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Hangar Items for {{ character.character_name }}</h2>
+  {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+  {% else %}
+    <table class="table table-striped mt-3">
+      <thead>
+        <tr>
+          <th>Item Type ID</th>
+          <th>Quantity</th>
+          <th>Location</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in assets %}
+        <tr>
+          <td>{{ item.type_id }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.location_id }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</div>
+{% endblock %}
