@@ -5,5 +5,5 @@ class BuyBackHangarConfig(AppConfig):
     label = 'buyback_hangar'
     verbose_name = 'BuyBack Hangar'
 
-    def ready(self):
-        from . import signals  # future: to link setup or model signals
+    #def ready(self):
+    #    from . import signals  # future: to link setup or model signals
