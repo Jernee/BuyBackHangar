@@ -16,8 +16,8 @@ def update_corp_hangar():
         try:
             # Retrieve the token for the character
             token = Token.objects.filter(character_id=character.character_id).first()
-            if not token or token.has_expired():
-                print(f"No valid token found for {character}. Skipping.")
+            if not token:
+                print(f"No token found for {character}. Skipping.")
                 continue
 
             # Fetch the roles for the character
