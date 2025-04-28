@@ -16,7 +16,7 @@ def update_corp_hangar():
         try:
             # Retrieve the token for the character
             token = Token.objects.filter(character_id=character.character_id).first()
-            if not token or not token.is_valid():
+            if not token or token.has_expired():
                 print(f"No valid token found for {character}. Skipping.")
                 continue
 
