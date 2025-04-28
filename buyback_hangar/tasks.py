@@ -10,16 +10,26 @@ esi = EsiClientProvider()
 
 @shared_task
 def update_corp_hangar():
-    # Filter users with main_character and check if they are directors
     for user in User.objects.filter(profile__main_character__isnull=False):
         character = user.profile.main_character
 
-        # Check if the character has the 'Director' role
-        if not character.roles or 'Director' not in character.roles:
-            continue  # Skip non-directors
-
         try:
-            # Use django-esi to make the API call with token_required
+            # Fetch the roles for the character
+            @token_required('esi-corporations.read_corporation_roles.v1')
+            def fetch_roles(token):
+                response = esi.client.Corporation.get_corporations_corporation_id_roles(
+                    corporation_id=character.corporation_id,
+                    token=token.valid_access_token()
+                )
+                return [role['role'] for role in response.result()]  # Extract roles
+
+            roles = fetch_roles(character)
+
+            # Check if the character has the 'Director' role
+            if 'Director' not in roles:
+                continue  # Skip non-directors
+
+            # Fetch hangar assets
             @token_required('esi-assets.read_corporation_hangars.v1')
             def fetch_hangar_assets(token):
                 response = esi.client.Assets.get_corporations_corporation_id_assets(
@@ -28,7 +38,6 @@ def update_corp_hangar():
                 )
                 return response.result()  # Extract JSON response
 
-            # Fetch the assets using the token
             assets = fetch_hangar_assets(character)
 
             # Save the response data to the database
