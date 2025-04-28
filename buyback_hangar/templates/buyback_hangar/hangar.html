@@ -6,9 +6,7 @@
 {% block content %}
 <div class="container mt-4">
   <h2>Hangar Items for {{ character.character_name }}</h2>
-  {% if error %}
-    <div class="alert alert-danger">{{ error }}</div>
-  {% else %}
+  {% if assets %}
     <table class="table table-striped mt-3">
       <thead>
         <tr>
@@ -27,6 +25,8 @@
         {% endfor %}
       </tbody>
     </table>
+  {% else %}
+    <div class="alert alert-warning">No items found in the hangar.</div>
   {% endif %}
 </div>
 {% endblock %}

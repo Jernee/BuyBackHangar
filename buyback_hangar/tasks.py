@@ -1,5 +1,5 @@
 from celery import shared_task
-from esi.clients import esi_client
+from allianceauth.services.hooks.esi import esi_client
 from allianceauth.services.hooks import get_token
 from django.utils.timezone import now
 from .models import CorpHangarCache
