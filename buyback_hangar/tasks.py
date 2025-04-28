@@ -20,6 +20,14 @@ def update_corp_hangar():
                 print(f"No token found for {character}. Skipping.")
                 continue
 
+            # Refresh the token if it is expired
+            if token.expires <= now():
+                try:
+                    token = token.refresh()
+                except Exception as e:
+                    print(f"Failed to refresh token for {character}: {e}")
+                    continue
+
             # Fetch the roles for the character
             response = esi.client.Corporation.get_corporations_corporation_id_roles(
                 corporation_id=character.corporation_id,
