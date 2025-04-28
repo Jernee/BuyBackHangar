@@ -16,14 +16,14 @@ def update_corp_hangar():
         try:
             # Retrieve the token for the character
             token = Token.objects.filter(character_id=character.character_id).first()
-            if not token or not token.valid:
+            if not token or not token.is_valid():
                 print(f"No valid token found for {character}. Skipping.")
                 continue
 
             # Fetch the roles for the character
             response = esi.client.Corporation.get_corporations_corporation_id_roles(
                 corporation_id=character.corporation_id,
-                token=token.valid_access_token()
+                token=token.access_token
             )
             roles = [role['role'] for role in response.result()]  # Extract roles
 
@@ -34,7 +34,7 @@ def update_corp_hangar():
             # Fetch hangar assets
             response = esi.client.Assets.get_corporations_corporation_id_assets(
                 corporation_id=character.corporation_id,
-                token=token.valid_access_token()
+                token=token.access_token
             )
             assets = response.result()  # Extract JSON response
 
