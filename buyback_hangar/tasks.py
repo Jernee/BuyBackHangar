@@ -1,6 +1,6 @@
 from celery import shared_task
 from esi.clients import EsiClientProvider
-from esi.decorators import token_required
+from esi.models import Token
 from django.utils.timezone import now
 from .models import CorpHangarCache
 from django.contrib.auth import get_user_model
@@ -14,31 +14,29 @@ def update_corp_hangar():
         character = user.profile.main_character
 
         try:
-            # Fetch the roles for the character
-            @token_required('esi-corporations.read_corporation_roles.v1')
-            def fetch_roles(token):
-                response = esi.client.Corporation.get_corporations_corporation_id_roles(
-                    corporation_id=character.corporation_id,
-                    token=token.valid_access_token()
-                )
-                return [role['role'] for role in response.result()]  # Extract roles
+            # Retrieve the token for the character
+            token = Token.objects.filter(character_id=character.character_id).first()
+            if not token or not token.valid:
+                print(f"No valid token found for {character}. Skipping.")
+                continue
 
-            roles = fetch_roles(character)
+            # Fetch the roles for the character
+            response = esi.client.Corporation.get_corporations_corporation_id_roles(
+                corporation_id=character.corporation_id,
+                token=token.valid_access_token()
+            )
+            roles = [role['role'] for role in response.result()]  # Extract roles
 
             # Check if the character has the 'Director' role
             if 'Director' not in roles:
                 continue  # Skip non-directors
 
             # Fetch hangar assets
-            @token_required('esi-assets.read_corporation_hangars.v1')
-            def fetch_hangar_assets(token):
-                response = esi.client.Assets.get_corporations_corporation_id_assets(
-                    corporation_id=character.corporation_id,
-                    token=token.valid_access_token()
-                )
-                return response.result()  # Extract JSON response
-
-            assets = fetch_hangar_assets(character)
+            response = esi.client.Assets.get_corporations_corporation_id_assets(
+                corporation_id=character.corporation_id,
+                token=token.valid_access_token()
+            )
+            assets = response.result()  # Extract JSON response
 
             # Save the response data to the database
             CorpHangarCache.objects.update_or_create(
