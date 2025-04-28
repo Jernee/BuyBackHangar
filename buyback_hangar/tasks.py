@@ -10,8 +10,14 @@ esi = EsiClientProvider()
 
 @shared_task
 def update_corp_hangar():
+    # Filter users with main_character and check if they are directors
     for user in User.objects.filter(profile__main_character__isnull=False):
         character = user.profile.main_character
+
+        # Check if the character has the 'Director' role
+        if not character.roles or 'Director' not in character.roles:
+            continue  # Skip non-directors
+
         try:
             # Use django-esi to make the API call with token_required
             @token_required('esi-assets.read_corporation_hangars.v1')
